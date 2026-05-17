@@ -314,29 +314,6 @@
     @media (max-width: 1100px) and (min-width: 701px) {
       .team-perf-grid { grid-template-columns: 1fr 1fr; }
     }
-
-    /* MOBILE BOTTOM NAV */
-    .mobile-nav {
-      display: none;
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
-      background: var(--header-bg); padding: 6px 4px;
-      box-shadow: 0 -2px 12px rgba(0,0,0,0.2);
-      gap: 2px; overflow-x: auto;
-    }
-    .mobile-nav-btn {
-      flex: 1; min-width: 52px; padding: 6px 4px; border: none;
-      background: transparent; color: rgba(255,255,255,0.75); cursor: pointer;
-      font-size: 0.58rem; font-weight: 600; border-radius: 8px;
-      display: flex; flex-direction: column; align-items: center; gap: 2px;
-      transition: all 0.15s;
-    }
-    .mobile-nav-btn .mn-icon { font-size: 1.15rem; }
-    .mobile-nav-btn.active, .mobile-nav-btn:hover { background: var(--accent); color: #0a0a0a; }
-    @media (max-width: 700px) {
-      .mobile-nav { display: flex; }
-      .header-center { display: none !important; }
-      .main { padding-bottom: 80px !important; }
-    }
   </style>
 </head>
 <body>
@@ -1023,6 +1000,8 @@
 </div>
 
 <script>
+//<![CDATA[
+
 // ── DATE & KW ──────────────────────────────────────────
 function getKW(d) {
   const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -1585,23 +1564,8 @@ function buildWeekPlanTable() {
   });
 }
 buildWeekPlanTable();
-</script>
 
-<!-- MOBILE BOTTOM NAV -->
-<nav class="mobile-nav" id="mobileNav">
-  <button class="mobile-nav-btn active" onclick="showPage('today'); setMobileNav(this)"><span class="mn-icon">🏠</span>Heute</button>
-  <button class="mobile-nav-btn" onclick="showPage('week'); setMobileNav(this)"><span class="mn-icon">📅</span>Woche</button>
-  <button class="mobile-nav-btn" onclick="showPage('projects'); setMobileNav(this)"><span class="mn-icon">📊</span>Projekte</button>
-  <button class="mobile-nav-btn" onclick="showPage('performance'); setMobileNav(this)"><span class="mn-icon">👥</span>Team</button>
-  <button class="mobile-nav-btn" onclick="showPage('monday'); setMobileNav(this)"><span class="mn-icon">📋</span>Monday</button>
-  <button class="mobile-nav-btn" onclick="showPage('growth'); setMobileNav(this)"><span class="mn-icon">🌱</span>Strategie</button>
-</nav>
-
-<script>
-function setMobileNav(btn) {
-  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-}
+//]]>
 </script>
 </body>
 </html>function renderCapacityCard(grid, m) {
