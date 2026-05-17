@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>re.venture | CEO Cockpit v2</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --card2: #f8f9fa;
+      --primary: #1a3c5e;
+      --primary-light: #2a5580;
+      --accent: #2ecc71;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --shadow: 0 1px 4px rgba(0,0,0,0.10), 0 1px 2px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+      --header-bg: #1a3c5e;
+    }
+    [data-theme="dark"] {
+      --bg: #0d0d0d;
+      --card: #1a1a1a;
+      --card2: #222222;
+      --primary: #2ecc71;
+      --primary-light: #27ae60;
+      --accent: #2ecc71;
+      --text: #f0f0f0;
+      --muted: #888888;
+      --border: #2e2e2e;
+      --red: #ff5555;
+      --amber: #f59e0b;
+      --green: #2ecc71;
+      --blue: #60a5fa;
+      --shadow: 0 1px 4px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 24px rgba(0,0,0,0.7);
+      --header-bg: #0a0a0a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      background: var(--header-bg);
+      color: white;
+      padding: 16px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-size: 1.35rem; font-weight: 800; letter-spacing: 0.3px; }
+    .logo span { color: var(--accent); }
+    .header-center { display: flex; gap: 8px; }
+    .nav-tab {
+      padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; border: none; background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.9);
+      transition: all 0.15s;
+    }
+    .nav-tab.active, .nav-tab:hover { background: var(--accent); color: #0a0a0a; }
+    .header-right { text-align: right; font-size: 0.8rem; opacity: 0.85; }
+    .kw-badge { background: var(--accent); color: white; font-weight: 700; font-size: 0.85rem; padding: 3px 11px; border-radius: 20px; margin-left: 10px; }
+
+    /* LAYOUT */
+    .main { max-width: 1440px; margin: 0 auto; padding: 24px 24px 48px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* SECTION TITLE */
+    .section-title { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin: 28px 0 12px; }
+
+    /* CARD */
+    .card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; }
+
+    /* ── SURVIVAL BAND ── */
+    .survival-band {
+      background: linear-gradient(135deg, var(--header-bg) 0%, #c0392b 100%);
+      border-radius: 14px; padding: 22px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: white; margin-bottom: 0;
+      box-shadow: var(--shadow-md);
+    }
+    .survival-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.75; margin-bottom: 4px; }
+    .survival-main { font-size: 1.25rem; font-weight: 700; }
+    .survival-sub { font-size: 0.82rem; opacity: 0.8; margin-top: 4px; }
+    .countdown-box { text-align: center; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 20px; min-width: 140px; }
+    .countdown-num { font-size: 2.6rem; font-weight: 900; color: #fbbf24; line-height: 1; }
+    .countdown-label { font-size: 0.72rem; opacity: 0.8; margin-top: 2px; }
+
+    /* BIG 3 */
+    .big3-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .big3-card { background: var(--header-bg); color: white; border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
+    .big3-num { font-size: 2.2rem; font-weight: 900; color: var(--accent); line-height: 1; }
+    .big3-sublabel { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.65; margin-bottom: 6px; }
+    .big3-text { font-size: 0.95rem; font-weight: 600; margin-top: 8px; line-height: 1.45; outline: none; cursor: text; }
+    .big3-text:empty:before { content: attr(placeholder); opacity: 0.45; font-style: italic; }
+
+    /* TWO-COL */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+    /* PRIORITY PROJECTS */
+    .proj-list { display: flex; flex-direction: column; gap: 10px; }
+    .proj-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 14px 16px; background: var(--card); border-radius: 10px;
+      box-shadow: var(--shadow); border-left: 5px solid var(--border);
+      cursor: pointer; transition: box-shadow 0.15s;
+    }
+    .proj-item:hover { box-shadow: var(--shadow-md); }
+    .proj-item.critical { border-left-color: var(--red); }
+    .proj-item.high { border-left-color: var(--amber); }
+    .proj-item.active { border-left-color: var(--green); }
+    .proj-item.watch { border-left-color: var(--blue); }
+    .proj-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 1px; }
+    .proj-body { flex: 1; min-width: 0; }
+    .proj-name { font-size: 0.92rem; font-weight: 700; }
+    .proj-detail { font-size: 0.78rem; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+    .proj-badges { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-amber { background: #fef3c7; color: #92400e; }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-purple { background: #f3e8ff; color: #7e22ce; }
+    .badge-gray { background: #f3f4f6; color: #4b5563; }
+    .proj-status { font-size: 1.3rem; flex-shrink: 0; }
+
+    /* TEAM SECTION */
+    .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .team-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; }
+    .team-flag { font-size: 1.6rem; margin-bottom: 8px; }
+    .team-name { font-size: 0.88rem; font-weight: 700; }
+    .team-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .team-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+    .team-status { display: flex; align-items: center; font-size: 0.8rem; margin-top: 10px; font-weight: 600; }
+    .team-actions { margin-top: 12px; }
+    .team-action-item { font-size: 0.78rem; color: var(--muted); padding: 4px 0; border-bottom: 1px solid var(--border); }
+    .team-action-item:last-child { border-bottom: none; }
+    .editable-area {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 10px; font-size: 0.8rem; color: var(--text);
+      font-family: inherit; resize: vertical; min-height: 64px;
+      background: #fafafa; margin-top: 10px;
+    }
+    .editable-area:focus { outline: none; border-color: var(--primary); background: white; }
+
+    /* LIQUIDITY RADAR */
+    .liq-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .liq-card { background: var(--card); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; }
+    .liq-title { font-size: 0.78rem; font-weight: 700; margin-bottom: 6px; }
+    .liq-when { font-size: 0.72rem; color: var(--muted); }
+    .liq-amount { font-size: 1.1rem; font-weight: 800; margin-top: 4px; }
+    .liq-bar { height: 5px; border-radius: 3px; background: var(--border); margin-top: 8px; }
+    .liq-bar-fill { height: 5px; border-radius: 3px; }
+
+    /* DECISIONS */
+    .dec-list { display: flex; flex-direction: column; gap: 8px; }
+    .dec-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px; background: var(--card); border-radius: 10px;
+      box-shadow: var(--shadow); border-left: 4px solid var(--amber);
+    }
+    .dec-item.urgent { border-left-color: var(--red); }
+    .dec-text { font-size: 0.88rem; font-weight: 600; flex: 1; }
+    .dec-sub { font-size: 0.76rem; color: var(--muted); margin-top: 2px; }
+    .dec-due { font-size: 0.7rem; padding: 2px 8px; border-radius: 6px; background: #fef3c7; color: #92400e; white-space: nowrap; align-self: flex-start; }
+    .dec-due.urgent { background: #fee2e2; color: #991b1b; }
+    .add-btn { background: none; border: 2px dashed var(--border); border-radius: 10px; padding: 10px; color: var(--muted); cursor: pointer; font-size: 0.85rem; width: 100%; text-align: center; margin-top: 8px; transition: all 0.15s; }
+    .add-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* WEEK */
+    .week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .day-card { background: var(--card); border-radius: 10px; box-shadow: var(--shadow); padding: 14px; }
+    .day-card.today { border: 2px solid var(--primary); }
+    .day-name { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+    .day-card.today .day-name { color: var(--primary); }
+    .day-slot { font-size: 0.73rem; padding: 5px 8px; border-radius: 6px; margin-bottom: 4px; line-height: 1.35; }
+    .slot-deep { background: #dbeafe; color: #1e40af; }
+    .slot-meet { background: #fef3c7; color: #92400e; }
+    .slot-buf { background: #f3f4f6; color: var(--muted); }
+    .slot-block { background: #dcfce7; color: #15803d; font-weight: 700; }
+    .slot-crit { background: #fee2e2; color: #991b1b; font-weight: 700; }
+
+    /* GROWTH PAGE */
+    .growth-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .growth-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 20px; border-top: 4px solid var(--primary); }
+    .growth-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .growth-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 6px; }
+    .growth-items { list-style: none; }
+    .growth-items li { font-size: 0.8rem; color: var(--muted); padding: 4px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+    .growth-items li:last-child { border-bottom: none; }
+    .growth-items li::before { content: '▶'; color: var(--accent); font-size: 0.6rem; margin-top: 3px; flex-shrink: 0; }
+
+    /* ENERGY */
+    .energy-row { display: flex; gap: 8px; }
+    .e-btn { flex: 1; padding: 9px 6px; border: 2px solid var(--border); border-radius: 8px; background: white; cursor: pointer; font-size: 1rem; text-align: center; transition: all 0.15s; }
+    .e-btn span { display: block; font-size: 0.65rem; color: var(--muted); margin-top: 3px; }
+    .e-btn:hover, .e-btn.active { border-color: var(--primary); background: var(--primary); color: white; }
+    .e-btn.active span { color: rgba(255,255,255,0.75); }
+
+    /* BOTTOM NOTES */
+    .notes-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .notes-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; }
+    .notes-title { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 10px; }
+
+    /* MODAL */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 16px; padding: 28px; width: 480px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+    .modal h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 16px; color: var(--primary); }
+    .modal label { font-size: 0.8rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; margin-top: 12px; }
+    .modal input, .modal textarea, .modal select { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.87rem; font-family: inherit; }
+    .modal input:focus, .modal textarea:focus, .modal select:focus { outline: none; border-color: var(--primary); }
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+    .btn-primary { background: var(--primary); color: white; border: none; padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 0.87rem; font-weight: 600; }
+    .btn-secondary { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 9px 20px; border-radius: 8px; cursor: pointer; font-size: 0.87rem; }
+
+    /* PERFORMANCE PAGE */
+    .perf-section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin: 28px 0 12px;
+    }
+    .perf-filter-btn {
+      padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; border: 1.5px solid var(--border); background: white; color: var(--muted);
+      transition: all 0.15s;
+    }
+    .perf-filter-btn.active, .perf-filter-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
+    .team-perf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+    .team-perf-card {
+      background: var(--card); border-radius: 14px; box-shadow: var(--shadow);
+      padding: 18px; border-top: 4px solid var(--primary); transition: box-shadow 0.15s;
+    }
+    .team-perf-card:hover { box-shadow: var(--shadow-md); }
+    .tpc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .tpc-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 800; color: white; flex-shrink: 0;
+    }
+    .tpc-name { font-size: 0.92rem; font-weight: 800; }
+    .tpc-role { font-size: 0.72rem; color: var(--muted); margin-top: 1px; }
+    .tpc-status-badge {
+      margin-left: auto; font-size: 0.68rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 10px; white-space: nowrap;
+    }
+    .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .kpi-box {
+      background: var(--bg); border-radius: 8px; padding: 8px 10px;
+      text-align: center; cursor: pointer; transition: all 0.12s;
+    }
+    .kpi-box:hover { background: #e8f5e9; }
+    .kpi-val { font-size: 1.4rem; font-weight: 900; color: var(--primary); line-height: 1; }
+    .kpi-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+    .kpi-input { width: 100%; text-align: center; border: none; background: transparent; font-size: 1.4rem; font-weight: 900; color: var(--primary); font-family: inherit; outline: none; }
+    .task-list { display: flex; flex-direction: column; gap: 5px; }
+    .task-item {
+      display: flex; align-items: center; gap: 8px; font-size: 0.78rem;
+      padding: 5px 8px; border-radius: 6px; background: var(--bg); cursor: pointer;
+    }
+    .task-item.done { opacity: 0.5; text-decoration: line-through; }
+    .task-cb { width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--border); flex-shrink: 0; cursor: pointer; transition: all 0.1s; }
+    .task-cb.checked { background: var(--green); border-color: var(--green); }
+    .task-add { font-size: 0.75rem; color: var(--muted); cursor: pointer; padding: 4px 8px; border-radius: 6px; border: 1px dashed var(--border); text-align: center; margin-top: 4px; }
+    .task-add:hover { border-color: var(--primary); color: var(--primary); }
+    /* Calendar mini */
+    .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; }
+    .cal-day-head { font-size: 0.62rem; color: var(--muted); text-align: center; font-weight: 700; text-transform: uppercase; }
+    .cal-day { height: 28px; border-radius: 6px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.72rem; cursor: pointer; transition: all 0.1s; }
+    .cal-day.today { background: var(--primary); color: white; font-weight: 800; }
+    .cal-day.has-event { background: #dcfce7; color: #15803d; font-weight: 700; }
+    .cal-day.weekend { opacity: 0.4; }
+    /* Monday page */
+    .monday-frame-wrap { background: var(--card); border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+    .monday-toolbar { padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--border); }
+    .monday-logo { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
+    .monday-url-input { flex: 1; padding: 7px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.82rem; font-family: inherit; }
+    .monday-url-input:focus { outline: none; border-color: var(--primary); }
+    .monday-open-btn { padding: 7px 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 600; }
+    .monday-placeholder { padding: 60px 20px; text-align: center; color: var(--muted); }
+    .monday-placeholder .big-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .monday-quick-link {
+      display:block; padding:8px 12px; background:var(--bg); border-radius:8px;
+      text-decoration:none; font-size:0.8rem; color:var(--text); font-weight:600;
+      border:1px solid var(--border); transition:all 0.12s;
+    }
+    .monday-quick-link:hover { background:var(--primary); color:white; border-color:var(--primary); }
+
+    @media (max-width: 1100px) {
+      .big3-grid, .three-col, .liq-grid, .team-grid, .notes-grid { grid-template-columns: 1fr 1fr; }
+      .week-grid { grid-template-columns: repeat(3,1fr); }
+      .growth-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 700px) {
+      .big3-grid, .two-col, .three-col, .liq-grid, .team-grid, .notes-grid, .week-grid, .growth-grid, .team-perf-grid { grid-template-columns: 1fr; }
+      .header-center { display: none; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .main { padding: 12px 12px 48px; }
+      .survival-band { flex-direction: column; gap: 14px; }
+      .countdown-box { width: 100%; }
+      #weekPlanTable { display: none; }
+      .monday-toolbar { flex-wrap: wrap; }
+    }
+    @media (max-width: 1100px) and (min-width: 701px) {
+      .team-perf-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    /* MOBILE BOTTOM NAV */
+    .mobile-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: var(--header-bg); padding: 6px 4px;
+      box-shadow: 0 -2px 12px rgba(0,0,0,0.2);
+      gap: 2px; overflow-x: auto;
+    }
+    .mobile-nav-btn {
+      flex: 1; min-width: 52px; padding: 6px 4px; border: none;
+      background: transparent; color: rgba(255,255,255,0.75); cursor: pointer;
+      font-size: 0.58rem; font-weight: 600; border-radius: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      transition: all 0.15s;
+    }
+    .mobile-nav-btn .mn-icon { font-size: 1.15rem; }
+    .mobile-nav-btn.active, .mobile-nav-btn:hover { background: var(--accent); color: #0a0a0a; }
+    @media (max-width: 700px) {
+      .mobile-nav { display: flex; }
+      .header-center { display: none !important; }
+      .main { padding-bottom: 80px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <img src="data:image/png;base64,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" alt="re.venture" style="height:32px;width:auto;display:block;">
+    <span style="opacity:0.35;font-size:1.1rem;">|</span>
+    <span style="font-size:0.95rem;font-weight:600;opacity:0.9;">CEO Cockpit</span>
+    <span class="kw-badge" id="kwBadge">KW —</span>
+  </div>
+  <div class="header-center">
+    <button class="nav-tab active" onclick="showPage('survival')">🔴 Überleben</button>
+    <button class="nav-tab" onclick="showPage('growth')">🚀 Wachstum</button>
+    <button class="nav-tab" onclick="showPage('team')">👥 Team</button>
+    <button class="nav-tab" onclick="showPage('performance')">📊 Performance</button>
+    <button class="nav-tab" onclick="showPage('monday')">📋 Monday</button>
+    <button class="nav-tab" onclick="showPage('week')">📅 Woche</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button id="themeBtn" onclick="toggleTheme()" title="Dark / Light Mode wechseln"
+      style="padding:5px 13px;border-radius:20px;font-size:0.72rem;font-weight:700;
+             border:1.5px solid rgba(255,255,255,0.3);background:transparent;color:white;cursor:pointer;">
+      🌙 Dark
+    </button>
+  <div class="header-right">
+    <div style="font-size:0.95rem;font-weight:600;" id="headerDate">—</div>
+    <div style="margin-top:1px;">Jens Kompauer · Founder & CEO</div>
+  </div>
+  </div>
+</header>
+
+<div class="main">
+
+<!-- ════════════════════════════════════════════
+     PAGE: ÜBERLEBEN
+════════════════════════════════════════════ -->
+<div class="page active" id="page-survival">
+
+  <!-- M&A COUNTDOWN -->
+  <div class="survival-band">
+    <div>
+      <div class="survival-title">⚠️ Kritische Deadline</div>
+      <div class="survival-main">HoldCo Asset Management — M&A Close</div>
+      <div class="survival-sub">Transaktion muss geclosed sein · Projektwert sichern · HoldCo-Gründung läuft</div>
+    </div>
+    <div class="countdown-box">
+      <div class="countdown-num" id="countdownDays">—</div>
+      <div class="countdown-label">Tage bis 01.09.2026</div>
+    </div>
+  </div>
+
+  <!-- BIG 3 -->
+  <div class="section-title">🎯 Wochenprioritäten — Die Big 3</div>
+  <div class="big3-grid">
+    <div class="big3-card">
+      <div class="big3-sublabel">Priorität</div>
+      <div class="big3-num">1</div>
+      <div class="big3-text" contenteditable="true" placeholder="Fokus #1 diese Woche..."></div>
+    </div>
+    <div class="big3-card">
+      <div class="big3-sublabel">Priorität</div>
+      <div class="big3-num">2</div>
+      <div class="big3-text" contenteditable="true" placeholder="Fokus #2 diese Woche..."></div>
+    </div>
+    <div class="big3-card">
+      <div class="big3-sublabel">Priorität</div>
+      <div class="big3-num">3</div>
+      <div class="big3-text" contenteditable="true" placeholder="Fokus #3 diese Woche..."></div>
+    </div>
+  </div>
+
+  <!-- ENERGIE -->
+  <div class="section-title">⚡ Energie & Fokus</div>
+  <div class="card" style="padding:14px;">
+    <div class="energy-row">
+      <button class="e-btn" onclick="setE(this)">🚀<span>Volle Power</span></button>
+      <button class="e-btn" onclick="setE(this)">✅<span>Fokussiert</span></button>
+      <button class="e-btn" onclick="setE(this)">⚖️<span>Gemischt</span></button>
+      <button class="e-btn" onclick="setE(this)">🔋<span>Erschöpft</span></button>
+      <button class="e-btn" onclick="setE(this)">🌪️<span>Unter Druck</span></button>
+    </div>
+  </div>
+
+  <!-- PRIORITY PROJECTS -->
+  <div class="section-title">🏗️ Projektprioritäten — Übersicht</div>
+  <div class="proj-list" id="projList"></div>
+
+  <!-- LIQUIDITÄT RADAR -->
+  <div class="section-title">💰 Liquiditäts-Radar — Einkommensquellen & Status</div>
+  <div class="liq-grid">
+    <div class="liq-card">
+      <div class="liq-title">🤝 M&A / Co-Investoren</div>
+      <div class="liq-when">Zeithorizont: Q3 2026</div>
+      <div class="liq-amount" style="color:var(--red);">Kritisch</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">HoldCo-Transaktion · Pipeline-Absicherung</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:30%;background:var(--red);"></div></div>
+    </div>
+    <div class="liq-card">
+      <div class="liq-title">🇬🇹 Guatemala — Spannungsschutz</div>
+      <div class="liq-when">Zeithorizont: kurzfristig</div>
+      <div class="liq-amount" style="color:var(--green);">Quick Win 🟢</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Hohe Marge · Container-Lieferung</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:70%;background:var(--green);"></div></div>
+    </div>
+    <div class="liq-card">
+      <div class="liq-title">🔧 Serviceleistungen</div>
+      <div class="liq-when">Zeithorizont: laufend</div>
+      <div class="liq-amount" style="color:var(--amber);">Im Aufbau</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Entwicklung im Auftrag · O&M Services</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:45%;background:var(--amber);"></div></div>
+    </div>
+    <div class="liq-card">
+      <div class="liq-title">🏛️ Förderungen</div>
+      <div class="liq-when">Zeithorizont: mittel</div>
+      <div class="liq-amount" style="color:var(--amber);">Recherche läuft</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">EU-Förderprogramme · KfW · Bundesförderung</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:20%;background:var(--amber);"></div></div>
+    </div>
+    <div class="liq-card">
+      <div class="liq-title">☀️ Stadtwerke Kempen — PPA</div>
+      <div class="liq-when">Zeithorizont: Ausschreibung läuft</div>
+      <div class="liq-amount" style="color:var(--blue);">In Verhandlung</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Grüne Wärme · Solarthermie</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:50%;background:var(--blue);"></div></div>
+    </div>
+    <div class="liq-card">
+      <div class="liq-title">🏭 Datacenter Kränzlin</div>
+      <div class="liq-when">Zeithorizont: mittelfristig</div>
+      <div class="liq-amount" style="color:var(--blue);">Notariat läuft</div>
+      <div style="font-size:0.75rem;color:var(--muted);margin-top:4px;">Nahwärme · Green Heat · Kaufoption</div>
+      <div class="liq-bar"><div class="liq-bar-fill" style="width:40%;background:var(--blue);"></div></div>
+    </div>
+  </div>
+
+  <!-- OFFENE ENTSCHEIDUNGEN -->
+  <div class="section-title">⚠️ Offene Entscheidungen & Eskalationen</div>
+  <div class="dec-list" id="decList"></div>
+  <button class="add-btn" onclick="openDecModal()">+ Entscheidung / Eskalation hinzufügen</button>
+
+  <!-- NOTES -->
+  <div class="section-title">📝 Notizen & Parking Lot</div>
+  <div class="notes-grid">
+    <div class="notes-card">
+      <div class="notes-title">🧠 CEO-Notizen</div>
+      <textarea class="editable-area" style="min-height:100px;" placeholder="Gedanken, Ideen, Beobachtungen..."></textarea>
+    </div>
+    <div class="notes-card">
+      <div class="notes-title">🤖 KI delegieren (Langdock / Copilot)</div>
+      <textarea class="editable-area" style="min-height:100px;" placeholder="Recherchen, Memos, Analysen, Entwürfe, Automatisierungen..."></textarea>
+    </div>
+    <div class="notes-card">
+      <div class="notes-title">📌 Parking Lot — nächste Woche</div>
+      <textarea class="editable-area" style="min-height:100px;" placeholder="Wichtig, aber diese Woche keine Kapazität..."></textarea>
+    </div>
+  </div>
+
+</div><!-- /page-survival -->
+
+
+<!-- ════════════════════════════════════════════
+     PAGE: WACHSTUM
+════════════════════════════════════════════ -->
+<div class="page" id="page-growth">
+
+  <div class="section-title">🚀 Wachstumsstrategie — Innovation, Diversifikation, Skalierung</div>
+  <div class="growth-grid">
+
+    <div class="growth-card" style="border-top-color:#7c3aed;">
+      <div class="growth-icon">🤖</div>
+      <div class="growth-title">AI-Native Organisation</div>
+      <ul class="growth-items">
+        <li>KI-Roadmap für re.venture erstellen</li>
+        <li>Teams-Call-Analyse — Effizienz-Audit</li>
+        <li>Langdock / Copilot in 3 Kernprozessen aktiv</li>
+        <li>Make.com als Power-Automate-Alternative einführen</li>
+        <li>Automatisiertes Reporting PT & GT</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-purple">Priorität: Hoch</span> <span class="badge badge-gray">Q3/Q4 2026</span></div>
+    </div>
+
+    <div class="growth-card" style="border-top-color:#059669;">
+      <div class="growth-icon">🌍</div>
+      <div class="growth-title">Neue Geschäftsfelder — Business Development</div>
+      <ul class="growth-items">
+        <li>Solarthermie: Stadtwerke Kempen — Ausschreibung gewinnen</li>
+        <li>Heat Storage: Produkt-Roadmap & erste Kundengespräche</li>
+        <li>Datacenter: Kränzlin — Kaufoption notariell sichern</li>
+        <li>e-Aviation: Marktanalyse & Partnergespräche</li>
+        <li>Netzstabilisierungsprodukt — Konzept finalisieren</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-green">Strategisch</span> <span class="badge badge-gray">2026–2027</span></div>
+    </div>
+
+    <div class="growth-card" style="border-top-color:#d97706;">
+      <div class="growth-icon">🏢</div>
+      <div class="growth-title">HoldCo & Asset Management Plattform</div>
+      <ul class="growth-items">
+        <li>HoldCo-Gründung — Struktur & Gesellschaftsvertrag</li>
+        <li>M&A Prozess 1 — Close bis 01.09.2026 🔴</li>
+        <li>M&A Prozess 2 — Target identifizieren & ansprechen</li>
+        <li>Asset Management Prozesse definieren</li>
+        <li>Investoren-Reporting Infrastruktur aufbauen</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-red">Deadline 01.09.</span> <span class="badge badge-amber">Kritisch</span></div>
+    </div>
+
+    <div class="growth-card" style="border-top-color:#2563eb;">
+      <div class="growth-icon">📣</div>
+      <div class="growth-title">Marketing, Marke & Kultur</div>
+      <ul class="growth-items">
+        <li>Neue Website — Konzept, Agentur, Briefing</li>
+        <li>Corporate Design auf Next Level bringen</li>
+        <li>Social Media Strategie & Content Plan</li>
+        <li>Pressemitteilungen zu Projektmeilensteinen</li>
+        <li>Unternehmenskultur: Kundenbeziehung & Klimabeitrag stärken</li>
+        <li>Team-Verbundenheit & gesellschaftliche Verantwortung</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-blue">Marke</span> <span class="badge badge-gray">Q4 2026</span></div>
+    </div>
+
+    <div class="growth-card" style="border-top-color:#16a34a;">
+      <div class="growth-icon">⚡</div>
+      <div class="growth-title">Digitalisierung & Prozesse</div>
+      <ul class="growth-items">
+        <li>Datenstruktur 2.0 — SharePoint-Architektur</li>
+        <li>Dokumente standardisieren (Vorlagen-Bibliothek)</li>
+        <li>Meeting-Kultur: Async-First, No-Meeting-Mornings</li>
+        <li>Route-to-Market: Direktvermarktungsverträge</li>
+        <li>Make.com Automation Flows aufbauen</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-green">Effizienz</span> <span class="badge badge-gray">Q3 2026</span></div>
+    </div>
+
+    <div class="growth-card" style="border-top-color:#0891b2;">
+      <div class="growth-icon">🌐</div>
+      <div class="growth-title">Internationale Märkte</div>
+      <ul class="growth-items">
+        <li>Portugal: Pipeline-Ausbau & Genehmigungen vorantreiben</li>
+        <li>Guatemala: Spannungsschutz-Container — Rollout skalieren</li>
+        <li>Guatemala: Weitere Projekte nach erstem Erfolg</li>
+        <li>Neue Märkte evaluieren (iberische Halbinsel, LATAM)</li>
+      </ul>
+      <div style="margin-top:12px;"><span class="badge badge-blue">International</span> <span class="badge badge-gray">2026–2027</span></div>
+    </div>
+
+  </div>
+</div><!-- /page-growth -->
+
+
+<!-- ════════════════════════════════════════════
+     PAGE: TEAM
+════════════════════════════════════════════ -->
+<div class="page" id="page-team">
+
+  <div class="section-title">👥 Team — Führung, Status & Reporting</div>
+
+  <div class="team-grid">
+    <!-- DE -->
+    <div class="team-card">
+      <div class="team-flag">🇩🇪</div>
+      <div class="team-name">Deutschland — Kernteam</div>
+      <div class="team-sub">~12 FTE · Projektentwicklung, Engineering, Finance, BD</div>
+      <div class="team-status"><span class="team-dot" style="background:var(--green);"></span>Aktiv & eigenständig</div>
+      <div class="team-actions">
+        <div class="team-action-item">📋 Montag Team Calls — Projektfortschritt</div>
+        <div class="team-action-item">📊 Wöchentliches Reporting einführen (Forms)</div>
+        <div class="team-action-item">🤖 Teams Copilot — Meeting-Protokolle aktivieren</div>
+      </div>
+      <textarea class="editable-area" placeholder="Offene Punkte, Personalthemen, Beobachtungen..."></textarea>
+    </div>
+    <!-- PT -->
+    <div class="team-card">
+      <div class="team-flag">🇵🇹</div>
+      <div class="team-name">Portugal — Pipeline-Team</div>
+      <div class="team-sub">Donnerstag Touchpoint · Pipeline-Ausbau</div>
+      <div class="team-status"><span class="team-dot" style="background:var(--amber);"></span>Reporting ausstehend</div>
+      <div class="team-actions">
+        <div class="team-action-item">📅 Donnerstag 14:00 Uhr Jour Fixe 🔒</div>
+        <div class="team-action-item">📊 Wöchentliche Status-Vorlage einführen</div>
+        <div class="team-action-item">🎯 Meilenstein: RTB nächstes Projekt</div>
+      </div>
+      <textarea class="editable-area" placeholder="Status, offene Themen, Fortschritt..."></textarea>
+    </div>
+    <!-- GT -->
+    <div class="team-card">
+      <div class="team-flag">🇬🇹</div>
+      <div class="team-name">Guatemala — Projektteam</div>
+      <div class="team-sub">Dienstag abends · Spannungsschutz-Container</div>
+      <div class="team-status"><span class="team-dot" style="background:var(--green);"></span>Container-Lieferung läuft</div>
+      <div class="team-actions">
+        <div class="team-action-item">🚢 Container nach Guatemala — Lieferstatus</div>
+        <div class="team-action-item">💰 Hohe Marge sichern — Abrechnung vorbereiten</div>
+        <div class="team-action-item">📈 Skalierung: Folgeaufträge identifizieren</div>
+      </div>
+      <textarea class="editable-area" placeholder="Status, offene Themen, Fortschritt..."></textarea>
+    </div>
+  </div>
+
+  <div class="section-title">🤝 Geschäftsführung — Koordination & Abstimmung</div>
+  <div class="card">
+    <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;">
+        <div style="font-size:0.88rem;font-weight:700;margin-bottom:8px;">📅 Jour Fixe — Dienstag 14:00 Uhr (60–75 min)</div>
+        <ul style="font-size:0.8rem;color:var(--muted);list-style:none;display:flex;flex-direction:column;gap:5px;">
+          <li>💰 Cashflow & Liquidität</li>
+          <li>📊 Finance-Review</li>
+          <li>🏗️ Operative Pipeline-Überwachung</li>
+          <li>⚠️ Eskalationen & Entscheidungen</li>
+        </ul>
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:6px;">AGENDA DIESE WOCHE</div>
+        <textarea class="editable-area" style="min-height:90px;" placeholder="Themen für nächsten COO Jour Fixe..."></textarea>
+      </div>
+      <div style="flex:1;min-width:220px;">
+        <div style="font-size:0.78rem;font-weight:700;color:var(--muted);margin-bottom:6px;">LETZTE BESCHLÜSSE</div>
+        <textarea class="editable-area" style="min-height:90px;" placeholder="Entscheidungen & Action Items aus letztem Meeting..."></textarea>
+      </div>
+    </div>
+  
+
+  <!-- CTO -->
+  <div class="card" style="border-top:4px solid #065f46;margin-top:0;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <div style="width:38px;height:38px;border-radius:50%;background:#065f46;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;color:white;">I</div>
+      <div>
+        <div style="font-size:0.95rem;font-weight:800;">Ingo Ernst — CTO</div>
+        <div style="font-size:0.72rem;color:var(--muted);">Mitgesellschafter · Technik & Engineering</div>
+      </div>
+      <span onclick="this.textContent=this.textContent==='Termin setzen ＋'?'Termin gesetzt ✓':'Termin setzen ＋'"
+        style="margin-left:auto;font-size:0.7rem;font-weight:700;background:#d1fae5;color:#065f46;padding:3px 10px;border-radius:10px;cursor:pointer;">Termin setzen ＋</span>
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:160px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.8px;">Kernthemen</div>
+        <ul style="font-size:0.78rem;color:var(--muted);list-style:none;display:flex;flex-direction:column;gap:4px;">
+          <li>⚙️ Engineering & Technik</li><li>🔋 BESS-Technologie</li>
+          <li>🏗️ Projektausführung</li><li>🤖 KI & Digitalisierung</li><li>🌐 Neue Märkte (UG, GT)</li>
+        </ul>
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;">Agenda diese Woche</div>
+        <textarea class="editable-area" style="min-height:80px;" placeholder="Themen CTO Abstimmung..."></textarea>
+      </div>
+      <div style="flex:1;min-width:160px;">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.8px;">Offene Tech-Themen</div>
+        <textarea class="editable-area" style="min-height:80px;" placeholder="Technische Entscheidungen · Dependencies · Blocker..."></textarea>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="section-title">🎯 Personal & HR — Prioritäten</div>
+  <div class="two-col">
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">Offene Personalthemen</div>
+      <textarea class="editable-area" style="min-height:100px;" placeholder="Einstellungen, Feedback-Gespräche, Entwicklung, Konflikte..."></textarea>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">Teamkultur & Verbundenheit</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-bottom:8px;">re.venture-Kultur: Persönliche Beziehungen · Klimabeitrag · Gemeinschaft</div>
+      <textarea class="editable-area" style="min-height:80px;" placeholder="Team-Events, Maßnahmen, Beobachtungen zur Kultur..."></textarea>
+    </div>
+  </div>
+
+  <div class="section-title">📊 Reporting-Status je Team &amp; Markt</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;">
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-weight:700;font-size:0.85rem;">🇩🇪 DE — Kernteam</div>
+      <div style="font-size:0.72rem;color:var(--muted);">Projektentwicklung · Engineering · Finance</div>
+      <input type="date" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;">
+      <textarea class="editable-area" placeholder="Zusammenfassung Wochenbericht DE..."></textarea>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-weight:700;font-size:0.85rem;">🇵🇹 PT — Pipeline-Team</div>
+      <div style="font-size:0.72rem;color:var(--muted);">Pipeline-Ausbau · Genehmigungen</div>
+      <input type="date" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;">
+      <textarea class="editable-area" placeholder="Zusammenfassung Wochenbericht PT..."></textarea>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;">
+      <div style="font-weight:700;font-size:0.85rem;">🇬🇹 GT — Spannungsschutz-Container</div>
+      <div style="font-size:0.72rem;color:var(--muted);">Container-Lieferung · Hohe Marge</div>
+      <input type="date" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;">
+      <textarea class="editable-area" placeholder="Zusammenfassung Wochenbericht GT..."></textarea>
+    </div>
+    <div class="card" style="display:flex;flex-direction:column;gap:8px;border-top:3px solid #f59e0b;">
+      <div style="font-weight:700;font-size:0.85rem;">🇺🇬 Uganda — Projektentwicklung</div>
+      <div style="font-size:0.72rem;color:var(--muted);">Frühe Phase · Spannungsschutz-Container geplant</div>
+      <select style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-size:0.75rem;font-family:inherit;">
+        <option>🟡 In Entwicklung</option>
+        <option>🟢 Partner gefunden</option>
+        <option>🔵 Container in Planung</option>
+        <option>🔴 Verzögerung</option>
+      </select>
+      <input type="date" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;">
+      <textarea class="editable-area" placeholder="Marktanalyse · Partner · Container-Planung · nächste Schritte..."></textarea>
+    </div>
+  </div>
+
+</div><!-- /page-team -->
+
+
+<!-- ════════════════════════════════════════════
+     PAGE: PERFORMANCE
+════════════════════════════════════════════ -->
+<div class="page" id="page-performance">
+
+  <div class="section-title">📅 Team-Kalender — KW <span id="perfKW"></span></div>
+  <div class="card" style="margin-bottom:0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-size:0.85rem;font-weight:700;">Wochenübersicht — re.venture Team</div>
+      <div style="display:flex;gap:6px;">
+        <button class="perf-filter-btn active" onclick="filterTeam(this,'all')">Alle</button>
+        <button class="perf-filter-btn" onclick="filterTeam(this,'akquise')">Flächenakquise</button>
+        <button class="perf-filter-btn" onclick="filterTeam(this,'greenHeat')">Green Heat</button>
+        <button class="perf-filter-btn" onclick="filterTeam(this,'projEntw')">Projektentwicklung</button>
+        <button class="perf-filter-btn" onclick="filterTeam(this,'extern')">Externe</button>
+        <button class="perf-filter-btn" onclick="openAdminPanel()" style="margin-left:auto;background:var(--header-bg);color:white;border-color:var(--header-bg);">⚙️ Team verwalten</button>
+      </div>
+    </div>
+    <!-- Mini Week Calendar -->
+    <div class="cal-week" id="miniCalHead"></div>
+    <div class="cal-week" id="miniCalDays"></div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:6px;">
+      <span style="display:inline-block;width:12px;height:12px;background:var(--primary);border-radius:3px;vertical-align:middle;margin-right:4px;"></span>Heute
+      <span style="display:inline-block;width:12px;height:12px;background:#dcfce7;border:1px solid #15803d;border-radius:3px;vertical-align:middle;margin:0 4px 0 12px;"></span>Termin/Event
+    </div>
+  </div>
+
+  <div class="section-title">📊 Performance — Teams & Personen</div>
+  <div class="team-perf-grid" id="perfGrid"></div>
+
+</div><!-- /page-performance -->
+
+<!-- ════════════════════════════════════════════
+     PAGE: MONDAY
+════════════════════════════════════════════ -->
+<div class="page" id="page-monday">
+
+  <div class="section-title">📋 Monday.com — Dashboard Integration</div>
+
+  <div class="monday-frame-wrap">
+    <div class="monday-toolbar">
+      <div class="monday-logo">📋 Monday.com</div>
+      <input class="monday-url-input" id="mondayUrl" type="url"
+        placeholder="Monday Board-URL einfügen — z.B. https://reventure.monday.com/boards/..."
+        value="">
+      <button class="monday-open-btn" onclick="loadMonday()">📂 Dashboard laden</button>
+      <button class="monday-open-btn" style="background:#059669;" onclick="openMondayTab()">↗ In neuem Tab öffnen</button>
+    </div>
+    <div id="mondayContent">
+      <div class="monday-placeholder">
+        <div class="big-icon">📋</div>
+        <div style="font-size:1rem;font-weight:700;color:var(--primary);margin-bottom:8px;">Monday Board einbetten</div>
+        <div style="font-size:0.82rem;max-width:480px;margin:0 auto;line-height:1.6;">
+          Füge oben die URL deines Monday.com Boards ein und klicke <strong>„Dashboard laden"</strong>.<br><br>
+          <strong>Hinweis:</strong> Monday erlaubt das direkte Einbetten nur bei freigegebenen Boards (öffentliche Board-View oder Share-Link). 
+          Falls das Board gesperrt ist, öffne es direkt mit <strong>„In neuem Tab öffnen"</strong>.
+        </div>
+        <div style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <a href="https://reventure.monday.com" target="_blank" style="display:inline-block;padding:10px 20px;background:var(--primary);color:white;border-radius:10px;text-decoration:none;font-size:0.85rem;font-weight:700;">🔗 Monday öffnen</a>
+          <div style="padding:10px 20px;background:var(--bg);border-radius:10px;font-size:0.82rem;color:var(--muted);border:1px solid var(--border);">
+            💡 Tipp: Nutze Monday → Teilen → „Öffentlichen Link" für Einbettung
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🔗 Quick-Links — Monday Boards</div>
+  <div class="three-col">
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📁 Projekt-Boards</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🔋 BESS Portfolio</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">☀️ Solar Pipeline</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🏭 Datacenter Kränzlin</a>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">👥 Team-Boards</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🌾 Flächenakquise</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🏗️ Projektentwicklung</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">📊 Finance & Reporting</a>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📊 Dashboards</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🎯 CEO Overview</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">💰 Liquiditäts-Dashboard</a>
+        <a href="https://reventure.monday.com" target="_blank" class="monday-quick-link">🗺️ Internationale Märkte</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-monday -->
+
+<!-- ════════════════════════════════════════════
+     PAGE: WOCHE
+════════════════════════════════════════════ -->
+<div class="page" id="page-week">
+
+  <div class="section-title">📅 Mein Kalender</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:0;">
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:16px 20px;">
+      <div style="font-size:2rem;">📮</div>
+      <div style="flex:1;">
+        <div style="font-size:0.88rem;font-weight:800;">Outlook Kalender</div>
+        <div style="font-size:0.75rem;color:var(--muted);">Microsoft 365 · Work-Kalender</div>
+      </div>
+      <a href="https://outlook.office.com/calendar/view/workweek" target="_blank"
+        style="padding:8px 16px;background:var(--header-bg);color:white;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:700;">📅 Öffnen ↗</a>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:14px;padding:16px 20px;">
+      <div style="font-size:2rem;">🍎</div>
+      <div style="flex:1;">
+        <div style="font-size:0.88rem;font-weight:800;">Apple iCalendar</div>
+        <div style="font-size:0.75rem;color:var(--muted);">Privat · Familienkalender</div>
+      </div>
+      <a href="https://www.icloud.com/calendar" target="_blank"
+        style="padding:8px 16px;background:#555;color:white;border-radius:8px;text-decoration:none;font-size:0.8rem;font-weight:700;">🗓️ Öffnen ↗</a>
+    </div>
+  </div>
+
+  <div class="section-title">✏️ Wochenplan — Diese Woche</div>
+  <div style="overflow-x:auto;">
+  <table id="weekPlanTable" style="width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);min-width:700px;">
+    <thead>
+      <tr style="background:var(--header-bg);color:white;">
+        <th style="padding:10px 14px;font-size:0.75rem;font-weight:700;text-align:left;width:72px;">Zeit</th>
+        <th id="colMo" style="padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:center;min-width:110px;">Mo</th>
+        <th id="colDi" style="padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:center;min-width:110px;">Di</th>
+        <th id="colMi" style="padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:center;min-width:110px;">Mi ⭐</th>
+        <th id="colDo" style="padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:center;min-width:110px;">Do</th>
+        <th id="colFr" style="padding:10px 8px;font-size:0.72rem;font-weight:700;text-align:center;min-width:110px;">Fr</th>
+      </tr>
+    </thead>
+    <tbody id="weekPlanBody"></tbody>
+  </table>
+  </div>
+  <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;font-size:0.72rem;color:var(--muted);">
+    <span><span style="display:inline-block;width:10px;height:10px;background:#dbeafe;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>Deep Work</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#fef3c7;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>Meeting</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#fee2e2;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>Kritisch</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:#dcfce7;border-radius:2px;vertical-align:middle;margin-right:3px;"></span>Geblockt</span>
+    <span style="color:var(--muted);font-style:italic;">Rechtsklick auf Slot → Typ wechseln</span>
+  </div>
+
+  <div class="section-title">📅 Wochenrhythmus — Kalenderstruktur</div>
+  <div class="week-grid">
+    <div class="day-card" id="day-mo">
+      <div class="day-name">Montag</div>
+      <div class="day-slot slot-deep">08:00 Wochenplanung — Big 3 setzen</div>
+      <div class="day-slot slot-meet">09:00 Team Calls 🇩🇪 (Projektfortschritt)</div>
+      <div class="day-slot slot-deep">11:00 🔵 Deep Work — Strategie / BD</div>
+      <div class="day-slot slot-buf">15:30 E-Mail · Follow-ups · Planner</div>
+    </div>
+    <div class="day-card" id="day-di">
+      <div class="day-name">Dienstag</div>
+      <div class="day-slot slot-deep">08:00 🔵 Deep Work — Finance / Pipeline</div>
+      <div class="day-slot slot-meet">10:00 Kundencalls / Externe</div>
+      <div class="day-slot slot-crit">14:00 COO Michi — Jour Fixe 🔒</div>
+      <div class="day-slot slot-meet">19:00 Guatemala Team 🇬🇹</div>
+    </div>
+    <div class="day-card" id="day-mi">
+      <div class="day-name">Mittwoch ⭐ Maker-Tag</div>
+      <div class="day-slot slot-block">🔵 08:00–12:00 DEEP WORK — Neue Felder / M&A / HoldCo</div>
+      <div class="day-slot slot-block">🔵 13:00–15:30 DEEP WORK — Marketing / Digitalisierung</div>
+      <div class="day-slot slot-buf">15:30 Interne Meetings nur nach Freigabe</div>
+    </div>
+    <div class="day-card" id="day-do">
+      <div class="day-name">Donnerstag</div>
+      <div class="day-slot slot-deep">08:00 🔵 Deep Work — Route-to-Market / PPA</div>
+      <div class="day-slot slot-meet">09:30 Externe / Partner</div>
+      <div class="day-slot slot-meet">14:00 Portugal Team 🇵🇹</div>
+      <div class="day-slot slot-buf">16:00 Puffer / COO Overflow</div>
+    </div>
+    <div class="day-card" id="day-fr">
+      <div class="day-name">Freitag</div>
+      <div class="day-slot slot-deep">08:00 🔵 Deep Work — KI / Prozesse / Org.</div>
+      <div class="day-slot slot-meet">09:30 Wochenreview — Ampel-Check (30 min)</div>
+      <div class="day-slot slot-buf">10:30 Offener Puffer</div>
+      <div class="day-slot slot-block">Nachmittag: Frei / Energie aufladen 🔋</div>
+    </div>
+  </div>
+
+  <div class="section-title">🛠️ Tool-Stack — re.venture CEO</div>
+  <div class="three-col">
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">✅ M365 — Kern</div>
+      <ul style="font-size:0.78rem;color:var(--muted);list-style:none;display:flex;flex-direction:column;gap:6px;">
+        <li>🗓️ <strong>Outlook</strong> — Kalender, Bookings-Link</li>
+        <li>💬 <strong>Teams Premium</strong> — Calls + Copilot-Protokoll</li>
+        <li>📋 <strong>Planner</strong> — Tasks je Bereich</li>
+        <li>📂 <strong>SharePoint</strong> — Datenstruktur 2.0</li>
+        <li>🔄 <strong>Loop</strong> — Kollaborative Docs</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">🤖 KI & Automatisierung</div>
+      <ul style="font-size:0.78rem;color:var(--muted);list-style:none;display:flex;flex-direction:column;gap:6px;">
+        <li>✨ <strong>M365 Copilot</strong> — Outlook, Teams, Word</li>
+        <li>🔗 <strong>Make.com</strong> — Flows (statt Power Automate)</li>
+        <li>🧠 <strong>Langdock</strong> — Recherche, Memos, Dokumente</li>
+        <li>📊 <strong>Forms → Excel</strong> — Automatisches Reporting</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem;font-weight:700;margin-bottom:10px;">📋 Meeting-Regeln</div>
+      <ul style="font-size:0.78rem;color:var(--muted);list-style:none;display:flex;flex-direction:column;gap:6px;">
+        <li>🚫 Vor 11 Uhr: keine internen Meetings</li>
+        <li>⭐ Mittwoch: Maker-Tag — nur mit Freigabe</li>
+        <li>📋 Status-Meetings → async (Forms/Loop)</li>
+        <li>⏱️ Max. 45 min — klare Agenda Pflicht</li>
+        <li>📝 Jedes Meeting: Copilot-Protokoll + Actions</li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /page-week -->
+
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal" style="width:600px;max-height:85vh;overflow-y:auto;">
+    <h3>⚙️ Team verwalten</h3>
+    <div id="adminMemberList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:16px 0;">
+    <div style="font-size:0.85rem;font-weight:700;margin-bottom:12px;">➕ Neues Mitglied hinzufügen</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div><label>Name</label><input type="text" id="adm-name" placeholder="Vorname Nachname"></div>
+      <div><label>Initialen</label><input type="text" id="adm-init" placeholder="z.B. SW" maxlength="3"></div>
+      <div><label>Rolle / Funktion</label><input type="text" id="adm-role" placeholder="z.B. Projektentwicklung"></div>
+      <div><label>Team</label>
+        <select id="adm-group">
+          <option value="akquise">🌾 Flächenakquise</option>
+          <option value="greenHeat">🌱 Green Heat</option>
+          <option value="projEntw">🏗️ Projektentwicklung</option>
+          <option value="backoffice">🗂️ Back-Office</option>
+          <option value="werkstud">🎓 Werkstudent</option>
+          <option value="extern">🔗 Extern</option>
+        </select>
+      </div>
+      <div><label>Karten-Typ</label>
+        <select id="adm-type">
+          <option value="capacity">📋 Kapazität & Aufgaben</option>
+          <option value="kpi">📊 KPI + Aufgaben (Akquise)</option>
+          <option value="milestone">🏁 Meilensteine (Projektentw.)</option>
+        </select>
+      </div>
+      <div><label>Akzentfarbe</label><input type="color" id="adm-color" value="#1a3c5e" style="height:38px;padding:2px 6px;"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal('adminModal')">Schließen</button>
+      <button class="btn-primary" onclick="adminAddMember()">➕ Hinzufügen</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL: Entscheidung -->
+<div class="modal-overlay" id="decModal">
+  <div class="modal">
+    <h3>⚠️ Entscheidung / Eskalation</h3>
+    <label>Thema</label>
+    <input type="text" id="dec-title" placeholder="z.B. HoldCo-Vertrag freigeben">
+    <label>Kontext</label>
+    <textarea id="dec-sub" rows="2" placeholder="Hintergrund..."></textarea>
+    <label>Fälligkeit</label>
+    <input type="date" id="dec-due">
+    <label>Dringlichkeit</label>
+    <select id="dec-urg">
+      <option value="">Normal</option>
+      <option value="urgent">🔴 Dringend — diese Woche</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeModal('decModal')">Abbrechen</button>
+      <button class="btn-primary" onclick="addDec()">Speichern</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATE & KW ──────────────────────────────────────────
+function getKW(d) {
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const y = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - y) / 86400000) + 1) / 7);
+}
+const today = new Date();
+document.getElementById('headerDate').textContent = today.toLocaleDateString('de-DE', {weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+document.getElementById('kwBadge').textContent = 'KW ' + getKW(today);
+
+// Countdown
+const deadline = new Date('2026-09-01');
+const diff = Math.ceil((deadline - today) / 86400000);
+document.getElementById('countdownDays').textContent = diff > 0 ? diff : '0';
+
+// Heute markieren
+const dayMap = {1:'mo',2:'di',3:'mi',4:'do',5:'fr'};
+if (dayMap[today.getDay()]) document.getElementById('day-' + dayMap[today.getDay()]).classList.add('today');
+
+// ── NAVIGATION ─────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── ENERGIE ────────────────────────────────────────────
+function setE(btn) {
+  document.querySelectorAll('.e-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ── PROJEKTE ───────────────────────────────────────────
+const projects = [
+  {
+    icon: '🔋', name: 'BESS Portfolio — Kränzlin, Kronsberg, Wülknitz, Strübbel',
+    detail: 'Kernportfolio · RTB-Meilenstein je Projekt vorantreiben · Voraussetzung für HoldCo-Transaktion',
+    status: '🟡', priority: 'critical',
+    badges: [
+      {label:'Deadline 01.09.', cls:'badge-red'},
+      {label:'HoldCo-relevant', cls:'badge-amber'},
+      {label:'Project Finance', cls:'badge-blue'}
+    ]
+  },
+  {
+    icon: '🏭', name: 'Datacenter Kränzlin — Nahwärme & Green Heat',
+    detail: 'Kaufoptionsvertrag → notarielle Unterschrift · Unterstützung Industriegebiet & Gemeinde · Nahwärmeverkauf',
+    status: '🟡', priority: 'high',
+    badges: [
+      {label:'Notariat läuft', cls:'badge-amber'},
+      {label:'Neues Geschäftsfeld', cls:'badge-green'},
+      {label:'Liquiditätspotenzial', cls:'badge-blue'}
+    ]
+  },
+  {
+    icon: '☀️', name: 'Solarthermie — Stadtwerke Kempen',
+    detail: 'Ausschreibung: Lieferung Grüner Wärme · Wettbewerb läuft · Angebot schärfen',
+    status: '🟡', priority: 'high',
+    badges: [
+      {label:'Ausschreibung aktiv', cls:'badge-amber'},
+      {label:'Neues Geschäftsfeld', cls:'badge-green'},
+      {label:'Stadtwerke', cls:'badge-blue'}
+    ]
+  },
+  {
+    icon: '☀️', name: 'Solar Pipeline — Tarmow 83 MWp / Bentzin / Leussin',
+    detail: 'Nahe BESS Kronsberg · Flächensicherung & Netzkapazität prüfen · Synergien mit BESS-Portfolio',
+    status: '🟢', priority: 'active',
+    badges: [
+      {label:'Pipeline', cls:'badge-green'},
+      {label:'83 MWp', cls:'badge-blue'}
+    ]
+  },
+  {
+    icon: '🇬🇹', name: 'Guatemala — Spannungsschutz-Container',
+    detail: 'Erster Container · Hohe Margen · Kurzfristiger Liquiditätsbeitrag · Rollout skalieren',
+    status: '🟢', priority: 'active',
+    badges: [
+      {label:'Quick Win 💰', cls:'badge-green'},
+      {label:'Hohe Marge', cls:'badge-green'},
+      {label:'LATAM Aufbau', cls:'badge-blue'}
+    ]
+  },
+  {
+    icon: '🏛️', name: 'HoldCo Asset Management — Gründung & Aufbau',
+    detail: 'Voraussetzung für alle M&A-Transaktionen · Gesellschaftsvertrag · Struktur · Investoren-Reporting',
+    status: '🔴', priority: 'critical',
+    badges: [
+      {label:'🔴 Deadline 01.09.', cls:'badge-red'},
+      {label:'M&A Prozess 1', cls:'badge-red'},
+      {label:'M&A Prozess 2', cls:'badge-amber'}
+    ]
+  },
+];
+
+const statusCycle = ['🟢','🟡','🔴'];
+function cycleStatus(idx) {
+  const p = projects[idx];
+  p.status = statusCycle[(statusCycle.indexOf(p.status)+1) % 3];
+  renderProjects();
+}
+
+function renderProjects() {
+  const list = document.getElementById('projList');
+  list.innerHTML = '';
+  projects.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'proj-item ' + p.priority;
+    div.innerHTML = `
+      <div class="proj-icon">${p.icon}</div>
+      <div class="proj-body">
+        <div class="proj-name">${p.name}</div>
+        <div class="proj-detail">${p.detail}</div>
+        <div class="proj-badges">${p.badges.map(b=>`<span class="badge ${b.cls}">${b.label}</span>`).join('')}</div>
+      </div>
+      <div class="proj-status" onclick="cycleStatus(${i})" title="Status wechseln" style="cursor:pointer;">${p.status}</div>
+    `;
+    list.appendChild(div);
+  });
+}
+renderProjects();
+
+// ── ENTSCHEIDUNGEN ─────────────────────────────────────
+let decisions = [
+  { title:'HoldCo-Gründung — nächste Schritte definieren', sub:'Gesellschaftsvertrag · Notartermin · Struktur klären', due:'2026-06-01', urgent:true },
+  { title:'COO Jour Fixe — Dienstag 14:00 fest blockieren', sub:'Wöchentlich · Finance / Cashflow / Pipeline', due:'', urgent:false },
+  { title:'Make.com testen — Power Automate ablösen', sub:'Reporting-Flow PT & GT · Mac-kompatibel · DSGVO-konform', due:'', urgent:false },
+  { title:'Teams Copilot aktivieren', sub:'Meeting-Protokolle automatisch · Voraussetzung für Reporting', due:'', urgent:false },
+];
+
+function renderDecs() {
+  const list = document.getElementById('decList');
+  list.innerHTML = '';
+  decisions.forEach((d,i) => {
+    const dueStr = d.due ? new Date(d.due).toLocaleDateString('de-DE',{day:'2-digit',month:'short'}) : 'Offen';
+    const div = document.createElement('div');
+    div.className = 'dec-item' + (d.urgent ? ' urgent' : '');
+    div.innerHTML = `
+      <div style="font-size:1.1rem;">${d.urgent?'🔴':'🟡'}</div>
+      <div style="flex:1;">
+        <div class="dec-text">${d.title}</div>
+        <div class="dec-sub">${d.sub}</div>
+      </div>
+      <div class="dec-due ${d.urgent?'urgent':''}">${dueStr}</div>
+      <button onclick="removeDec(${i})" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:0.85rem;margin-left:6px;">✕</button>
+    `;
+    list.appendChild(div);
+  });
+}
+function openDecModal() {
+  ['dec-title','dec-sub'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('dec-due').value='';
+  document.getElementById('dec-urg').value='';
+  document.getElementById('decModal').classList.add('open');
+}
+function addDec() {
+  const t = document.getElementById('dec-title').value.trim();
+  if(!t) return;
+  decisions.push({ title:t, sub:document.getElementById('dec-sub').value, due:document.getElementById('dec-due').value, urgent:document.getElementById('dec-urg').value==='urgent' });
+  closeModal('decModal'); renderDecs();
+}
+function removeDec(i) { decisions.splice(i,1); renderDecs(); }
+renderDecs();
+
+// ── PERFORMANCE PAGE ───────────────────────────────────
+const teamData = [
+  // ── KPI CARDS (Flächenakquise + Green Heat) ──────────
+  {id:'hannes',  type:'kpi', group:'akquise',   name:'Hannes',         role:'Flächenakquise — Lead',                    color:'#1a3c5e', initials:'H',
+   kpis:{kontakte:0,anfragen:0,pacht:0,abschluss:0}, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Flächenliste KW aktualisieren','Eigentümer-Callbacks abarbeiten','Neue Gemeinden recherchieren']},
+  {id:'johanna', type:'kpi', group:'akquise',   name:'Johanna',        role:'Flächenakquise',                           color:'#2563eb', initials:'J',
+   kpis:{kontakte:0,anfragen:0,pacht:0,abschluss:0}, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Pachtverträge vorbereiten','CRM-Einträge pflegen']},
+  {id:'sandro',  type:'kpi', group:'akquise',   name:'Sandro',         role:'Flächenakquise',                           color:'#7c3aed', initials:'S',
+   kpis:{kontakte:0,anfragen:0,pacht:0,abschluss:0}, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Kaltakquise neue Region','Follow-ups diese Woche']},
+  {id:'stefan',  type:'kpi', group:'greenHeat', name:'Stefan Nestler', role:'Green Heat — Lead',                         color:'#059669', initials:'SN',
+   kpis:{kontakte:0,anfragen:0,pacht:0,abschluss:0}, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Kempen Ausschreibung — Angebotsstatus','Kränzlin Nahwärme — nächste Schritte','Kundengespräche Wärmelieferung']},
+
+  // ── MILESTONE CARD (Gunnar) ───────────────────────────
+  {id:'gunnar',  type:'milestone', group:'projEntw', name:'Gunnar',    role:'Projektentwicklung & Genehmigungsplanung',  color:'#d97706', initials:'G',
+   weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   milestones:[
+     {name:'Einreichung Baugenehmigung BESS Kränzlin',   target:'2026-07-15', risk:'yellow', note:''},
+     {name:'Einreichung Baugenehmigung BESS Kronsberg',  target:'2026-08-01', risk:'green',  note:''},
+     {name:'Netzkapazität-Bestätigung Wülknitz',         target:'2026-06-30', risk:'red',    note:''},
+   ],
+   tasks:['RTB-Checkliste aktualisieren','Netzbetreiber-Antwort nachfassen']},
+
+  // ── CAPACITY CARDS ────────────────────────────────────
+  {id:'sven',     type:'capacity', group:'projEntw',  name:'Sven Waldheim',      role:'Projektentwicklung',                         color:'#0f766e', initials:'SW',
+   load:60, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Projektstatus aktualisieren','Abstimmung mit Gunnar','Aufgaben diese Woche priorisieren']},
+  {id:'katharina',type:'capacity', group:'backoffice', name:'Katharina Seifert',  role:'Back-Office',                                color:'#0891b2', initials:'KS',
+   load:70, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Posteingang & Rechnungsfreigabe','Vertragsablage aktualisieren','Termine koordinieren CEO','Lieferantenkommunikation']},
+  {id:'zoe',      type:'capacity', group:'werkstud',  name:'Zoe Zinser',          role:'Werkstudentin',                              color:'#be185d', initials:'ZZ',
+   load:50, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Recherche-Auftrag KW erledigen','Datenbank pflegen']},
+  {id:'deborah',  type:'capacity', group:'werkstud',  name:'Deborah Ferreira',    role:'Werkstudentin',                              color:'#c2410c', initials:'DF',
+   load:60, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Marktrecherche Portugal','Präsentation vorbereiten']},
+  {id:'brian',    type:'capacity', group:'extern',    name:'Brian',               role:'Externer Consultant',                        color:'#374151', initials:'B',
+   load:40, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Deliverable diese Woche abstimmen','Feedback einholen','Zwischenbericht ausstehend']},
+  {id:'lennart',  type:'capacity', group:'greenHeat', name:'Lennart',             role:'Green Heat — Asset Management Strategie',    color:'#065f46', initials:'L',
+   load:55, weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+   tasks:['Asset Management Strategie aufsetzen','Struktur & Prozesse definieren','Abstimmung Stefan Nestler','Vorlage Investoren-Reporting']},
+];
+const kpiLabels = {kontakte:'Kundenkontakte', anfragen:'Flächenanfragen', pacht:'Pachtvertr. vers.', abschluss:'Abschlüsse'};
+const kpiColors  = {kontakte:'#1a3c5e', anfragen:'#059669', pacht:'#d97706', abschluss:'#2563eb'};
+let activeFilter = 'all';
+
+function filterTeam(btn, group) {
+  activeFilter = group;
+  document.querySelectorAll('.perf-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPerfGrid();
+}
+
+function groupLabel(g) {
+  return {akquise:'🌾 Akquise',greenHeat:'🌱 Green Heat',projEntw:'🏗️ Proj.Entw.',
+    backoffice:'🗂️ Back-Office',werkstud:'🎓 Werkstud.',extern:'🔗 Extern'}[g]||g;
+}
+function groupBg(g) {
+  return {akquise:'#dcfce7',greenHeat:'#d1fae5',projEntw:'#fef3c7',
+    backoffice:'#dbeafe',werkstud:'#f3e8ff',extern:'#f3f4f6'}[g]||'#f3f4f6';
+}
+
+function cardHeader(m) {
+  return `<div class="tpc-header">
+    <div class="tpc-avatar" style="background:${m.color};">${m.initials}</div>
+    <div><div class="tpc-name">${m.name}</div><div class="tpc-role">${m.role}</div></div>
+    <div class="tpc-status-badge" style="background:${groupBg(m.group)};color:#1a1a2e;">${groupLabel(m.group)}</div>
+  </div>`;
+}
+
+function focusBlockHtml(m) {
+  if(!m.weekFocus) m.weekFocus=[{text:'',done:false},{text:'',done:false},{text:'',done:false}];
+  const rows = m.weekFocus.map((f,fi)=>`
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <div style="width:20px;height:20px;border-radius:50%;background:${['#ef4444','#f59e0b','#3b82f6'][fi]};display:flex;align-items:center;justify-content:center;color:white;font-size:0.62rem;font-weight:900;flex-shrink:0;">${fi+1}</div>
+      <input type="text" value="${f.text}" placeholder="Fokus-Aufgabe ${fi+1}…"
+        style="flex:1;font-size:0.77rem;border:none;border-bottom:1.5px solid var(--border);padding:3px 4px;background:transparent;color:var(--text);font-family:inherit;outline:none;${f.done?'text-decoration:line-through;opacity:0.4;':''}"
+        oninput="updateFocus('${m.id}',${fi},'text',this.value)">
+      <div onclick="toggleFocus('${m.id}',${fi})" style="cursor:pointer;width:18px;height:18px;border-radius:4px;border:2px solid ${f.done?'#22c55e':'var(--border)'};background:${f.done?'#22c55e':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.6rem;">${f.done?'✓':''}</div>
+    </div>`).join('');
+  return `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:3px solid #ef4444;">
+    <div style="font-size:0.68rem;font-weight:800;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;">🎯 Wochenziele — Morning Call</div>
+    ${rows}</div>`;
+}
+
+function tasksHtml(m) {
+  const rows = (m.tasks||[]).map((t,ti)=>{
+    const done = (m.tasksDone||[])[ti];
+    return `<div class="task-item ${done?'done':''}" onclick="toggleTask2('${m.id}',${ti},this)">
+      <div class="task-cb ${done?'checked':''}"></div><span>${t}</span></div>`;
+  }).join('');
+  return `<div style="font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin:8px 0 5px;">Aufgaben</div>
+    <div class="task-list">${rows}</div>
+    <div class="task-add" onclick="addTaskPrompt('${m.id}')">+ Aufgabe hinzufügen</div>`;
+}
+
+function renderPerfGrid() {
+  const grid = document.getElementById('perfGrid');
+  if(!grid) return;
+  grid.innerHTML = '';
+  const filtered = activeFilter==='all' ? teamData : teamData.filter(m=>m.group===activeFilter);
+  filtered.forEach(m=>{
+    if(m.type==='kpi')       renderKpiCard(grid,m);
+    else if(m.type==='milestone') renderMilestoneCard(grid,m);
+    else                     renderCapacityCard(grid,m);
+  });
+}
+
+function renderKpiCard(grid, m) {
+  const card = document.createElement('div');
+  card.className='team-perf-card'; card.style.borderTopColor=m.color;
+  const kpiHtml = Object.keys(m.kpis).map(k=>`
+    <div class="kpi-box">
+      <input class="kpi-input" type="number" min="0" value="${m.kpis[k]}"
+        onchange="updateKpi('${m.id}','${k}',this.value)" style="color:${kpiColors[k]};">
+      <div class="kpi-label">${kpiLabels[k]}</div>
+    </div>`).join('');
+  card.innerHTML = cardHeader(m) + focusBlockHtml(m)
+    + `<div style="font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">KPIs — diese Woche</div>
+    <div class="kpi-grid">${kpiHtml}</div>`
+    + tasksHtml(m)
+    + `<textarea class="editable-area" style="margin-top:8px;min-height:44px;" placeholder="Notizen, Feedback..."></textarea>`;
+  grid.appendChild(card);
+}
+
+function renderCapacityCard(grid, m) {
+  const card = document.createElement('div');
+  card.className='team-perf-card'; card.style.borderTopColor=m.color;
+  const load=m.load||0;
+  const lc = load>=80?'#ef4444':load>=60?'#f59e0b':'#22c55e';
+  const ll = load>=80?'Hoch ausgelastet':load>=60?'Gut ausgelastet':'Kapazität verfügbar';
+  card.innerHTML = cardHeader(m) + focusBlockHtml(m)
+    + `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+        <div style="font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Auslastung</div>
+        <div style="font-size:0.72rem;font-weight:700;color:${lc};">${ll}</div>
+      </div>
+      <div style="height:7px;background:var(--border);border-radius:4px;">
+        <div style="height:7px;border-radius:4px;background:${lc};width:${load}%;transition:width 0.3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:2px;">
+        <span style="font-size:0.65rem;color:var(--muted);">0%</span>
+        <span style="font-size:0.75rem;font-weight:800;color:${lc};">${load}%</span>
+        <span style="font-size:0.65rem;color:var(--muted);">100%</span>
+      </div>
+      <input type="range" min="0" max="100" value="${load}" style="width:100%;margin-top:3px;cursor:pointer;accent-color:${lc};"
+        oninput="updateLoad('${m.id}',this.value)">
+    </div>`
+    + tasksHtml(m)
+    + `<textarea class="editable-area" style="margin-top:8px;min-height:44px;" placeholder="Notizen, Kommentare..."></textarea>`;
+  grid.appendChild(card);
+}
+
+function renderMilestoneCard(grid, m) {
+  const card = document.createElement('div');
+  card.className='team-perf-card'; card.style.borderTopColor=m.color;
+  const msHtml = (m.milestones||[]).map((ms,i)=>`
+    <div style="background:var(--bg);border-radius:8px;padding:9px 11px;margin-bottom:6px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+        <div style="font-size:0.77rem;font-weight:700;flex:1;">${ms.name}</div>
+        <select onchange="updateMsRisk('${m.id}',${i},this.value)"
+          style="font-size:0.68rem;border:1px solid var(--border);border-radius:6px;padding:2px 4px;background:var(--card);color:var(--text);cursor:pointer;flex-shrink:0;">
+          <option value="green"  ${ms.risk==='green' ?'selected':''}>🟢 Im Plan</option>
+          <option value="yellow" ${ms.risk==='yellow'?'selected':''}>🟡 Verzögerung</option>
+          <option value="red"    ${ms.risk==='red'   ?'selected':''}>🔴 Risiko</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:5px;">
+        <span style="font-size:0.68rem;color:var(--muted);">🎯 Ziel:</span>
+        <input type="date" value="${ms.target}"
+          style="font-size:0.7rem;border:1px solid var(--border);border-radius:6px;padding:3px 7px;background:var(--card);color:var(--text);"
+          onchange="updateMsTarget('${m.id}',${i},this.value)">
+      </div>
+      <input type="text" placeholder="Kommentar / Abweichungsgrund..." value="${ms.note}"
+        style="width:100%;margin-top:5px;font-size:0.72rem;border:1px solid var(--border);border-radius:6px;padding:4px 8px;background:var(--card);color:var(--text);"
+        oninput="updateMsNote('${m.id}',${i},this.value)">
+    </div>`).join('');
+  card.innerHTML = cardHeader(m) + focusBlockHtml(m)
+    + `<div style="font-size:0.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:7px;">🏁 Meilensteine & Abweichungsrisiko</div>`
+    + msHtml + tasksHtml(m)
+    + `<textarea class="editable-area" style="margin-top:8px;min-height:44px;" placeholder="Kapazität, Blocker, Eskalation..."></textarea>`;
+  grid.appendChild(card);
+}
+
+function updateKpi(id,k,v){const m=teamData.find(x=>x.id===id);if(m)m.kpis[k]=parseInt(v)||0;}
+function updateLoad(id,v){const m=teamData.find(x=>x.id===id);if(m){m.load=parseInt(v);renderPerfGrid();}}
+function updateMsRisk(id,i,v){const m=teamData.find(x=>x.id===id);if(m)m.milestones[i].risk=v;}
+function updateMsTarget(id,i,v){const m=teamData.find(x=>x.id===id);if(m)m.milestones[i].target=v;}
+function updateMsNote(id,i,v){const m=teamData.find(x=>x.id===id);if(m)m.milestones[i].note=v;}
+function updateFocus(id,fi,k,v){const m=teamData.find(x=>x.id===id);if(m&&m.weekFocus)m.weekFocus[fi][k]=v;}
+function toggleFocus(id,fi){const m=teamData.find(x=>x.id===id);if(m&&m.weekFocus){m.weekFocus[fi].done=!m.weekFocus[fi].done;renderPerfGrid();}}
+function toggleTask2(id,ti,el){const m=teamData.find(x=>x.id===id);if(!m)return;if(!m.tasksDone)m.tasksDone=Array(m.tasks.length).fill(false);m.tasksDone[ti]=!m.tasksDone[ti];el.classList.toggle('done');el.querySelector('.task-cb').classList.toggle('checked');}
+function addTaskPrompt(id){const m=teamData.find(x=>x.id===id);const t=prompt('Neue Aufgabe für '+m.name+':');if(t&&t.trim()){m.tasks.push(t.trim());if(m.tasksDone)m.tasksDone.push(false);renderPerfGrid();}}
+
+renderPerfGrid();
+
+// Mini Calendar
+function buildMiniCal() {
+  const headEl = document.getElementById('miniCalHead');
+  const daysEl = document.getElementById('miniCalDays');
+  const kwEl = document.getElementById('perfKW');
+  if(!headEl) return;
+  const days = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  headEl.innerHTML = days.map(d => `<div class="cal-day-head">${d}</div>`).join('');
+  const today = new Date();
+  const kw = getKW(today);
+  if(kwEl) kwEl.textContent = kw;
+  // Get Monday of current week
+  const dow = today.getDay() || 7;
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - dow + 1);
+  daysEl.innerHTML = '';
+  for(let i=0;i<7;i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isToday = d.toDateString() === today.toDateString();
+    const isWeekend = i >= 5;
+    const div = document.createElement('div');
+    div.className = 'cal-day' + (isToday?' today':'') + (isWeekend?' weekend':'');
+    div.textContent = d.getDate();
+    div.title = d.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+    daysEl.appendChild(div);
+  }
+}
+buildMiniCal();
+renderPerfGrid();
+
+// ── MONDAY ─────────────────────────────────────────────
+function loadMonday() {
+  const url = document.getElementById('mondayUrl').value.trim();
+  if(!url) { alert('Bitte eine Monday.com URL eingeben.'); return; }
+  const content = document.getElementById('mondayContent');
+  content.innerHTML = `<iframe src="${url}" style="width:100%;height:700px;border:none;" allowfullscreen></iframe>`;
+}
+function openMondayTab() {
+  const url = document.getElementById('mondayUrl').value.trim() || 'https://reventure.monday.com';
+  window.open(url, '_blank');
+}
+
+// ── ADMIN PANEL ────────────────────────────────────────
+function openAdminPanel() {
+  renderAdminList();
+  document.getElementById('adminModal').classList.add('open');
+}
+
+function renderAdminList() {
+  const list = document.getElementById('adminMemberList');
+  list.innerHTML = teamData.map((m,i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border-radius:8px;">
+      <div style="width:30px;height:30px;border-radius:50%;background:${m.color};display:flex;align-items:center;justify-content:center;color:white;font-size:0.72rem;font-weight:800;flex-shrink:0;">${m.initials}</div>
+      <div style="flex:1;">
+        <div style="font-size:0.85rem;font-weight:700;">${m.name}</div>
+        <div style="font-size:0.72rem;color:var(--muted);">${m.role} · ${m.type==='kpi'?'📊 KPI':m.type==='milestone'?'🏁 Meilenstein':'📋 Kapazität'}</div>
+      </div>
+      <input type="color" value="${m.color}" onchange="teamData[${i}].color='${m.color}';renderAdminList();renderPerfGrid();"
+        style="width:28px;height:28px;border:none;border-radius:50%;cursor:pointer;padding:0;" title="Farbe ändern">
+      <button onclick="adminRemove(${i})" style="background:#fee2e2;color:#991b1b;border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:0.75rem;font-weight:700;">Entfernen</button>
+    </div>`).join('');
+}
+
+function adminRemove(i) {
+  if(confirm('Mitglied "' + teamData[i].name + '" entfernen?')) {
+    teamData.splice(i,1);
+    renderAdminList();
+    renderPerfGrid();
+  }
+}
+
+function adminAddMember() {
+  const name = document.getElementById('adm-name').value.trim();
+  const initials = document.getElementById('adm-init').value.trim().toUpperCase();
+  const role = document.getElementById('adm-role').value.trim();
+  const group = document.getElementById('adm-group').value;
+  const type = document.getElementById('adm-type').value;
+  const color = document.getElementById('adm-color').value;
+  if(!name || !initials) { alert('Bitte Name und Initialen eingeben.'); return; }
+  const id = name.toLowerCase().replace(/\s+/g,'-') + '-' + Date.now();
+  const member = {id, type, group, name, role, color, initials,
+    weekFocus:[{text:'',done:false},{text:'',done:false},{text:'',done:false}],
+    tasks:['Aufgabe 1 eintragen']};
+  if(type==='kpi') member.kpis = {kontakte:0, anfragen:0, pacht:0, abschluss:0};
+  if(type==='capacity') member.load = 50;
+  if(type==='milestone') member.milestones = [{name:'Meilenstein 1',target:'',risk:'green',note:''}];
+  teamData.push(member);
+  renderAdminList();
+  renderPerfGrid();
+  ['adm-name','adm-init','adm-role'].forEach(id => document.getElementById(id).value='');
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+// ── THEME TOGGLE ───────────────────────────────────────
+let isDark = false;
+function toggleTheme() {
+  isDark = !isDark;
+  const btn = document.getElementById('themeBtn');
+  if(isDark) {
+    document.documentElement.setAttribute('data-theme','dark');
+    if(btn) btn.textContent = '☀️ Light';
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    if(btn) btn.textContent = '🌙 Dark';
+  }
+}
+
+// ── WEEK PLAN TABLE ────────────────────────────────────
+const wpSlots = ['07:00','07:30','08:00','08:30','09:00','09:30','10:00','10:30',
+  '11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30',
+  '15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00'];
+const wpDays = ['Mo','Di','Mi','Do','Fr'];
+const wpDefaults = {
+  'Mo-08:00':{t:'Wochenplanung — Big 3',type:'deep'},
+  'Mo-09:00':{t:'Team Calls 🇩🇪',type:'meet'},
+  'Mo-11:00':{t:'Deep Work — Strategie',type:'deep'},
+  'Di-08:00':{t:'Deep Work — Finance',type:'deep'},
+  'Di-10:00':{t:'Kundencalls / Externe',type:'meet'},
+  'Di-14:00':{t:'COO Michi — Jour Fixe 🔒',type:'crit'},
+  'Di-19:00':{t:'Guatemala Team 🇬🇹',type:'meet'},
+  'Mi-08:00':{t:'DEEP WORK — M&A / HoldCo',type:'block'},
+  'Mi-13:00':{t:'DEEP WORK — Marketing',type:'block'},
+  'Do-08:00':{t:'Deep Work — Route-to-Market',type:'deep'},
+  'Do-09:30':{t:'Externe / Partner',type:'meet'},
+  'Do-14:00':{t:'Portugal Team 🇵🇹',type:'meet'},
+  'Fr-08:00':{t:'Deep Work — KI / Prozesse',type:'deep'},
+  'Fr-09:30':{t:'Wochenreview — Ampel ✅',type:'meet'},
+};
+const wpTypeStyle = {
+  deep: {bg:'#dbeafe',col:'#1e40af'},
+  meet: {bg:'#fef3c7',col:'#92400e'},
+  crit: {bg:'#fee2e2',col:'#991b1b'},
+  block:{bg:'#dcfce7',col:'#15803d'},
+  buf:  {bg:'#f3f4f6',col:'#6b7280'},
+  free: {bg:'transparent',col:'var(--muted)'},
+};
+const wpData = {};
+const wpTypeOrder = ['free','deep','meet','crit','block','buf'];
+
+function buildWeekPlanTable() {
+  const tbody = document.getElementById('weekPlanBody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  const today = new Date();
+  const dow = today.getDay()||7;
+  const monday = new Date(today); monday.setDate(today.getDate()-dow+1);
+  wpDays.forEach((d,i)=>{
+    const el = document.getElementById('col'+d);
+    if(!el) return;
+    const date = new Date(monday); date.setDate(monday.getDate()+i);
+    const dd = date.getDate().toString().padStart(2,'0');
+    const mm = (date.getMonth()+1).toString().padStart(2,'0');
+    const isToday = date.toDateString()===today.toDateString();
+    el.innerHTML = d+(d==='Mi'?' ⭐':'')+'<br><span style="font-size:0.65rem;opacity:0.75;font-weight:400;">'+dd+'.'+mm+'</span>';
+    if(isToday){el.style.background='#2ecc71';el.style.color='#0a0a0a';}
+  });
+  wpSlots.forEach((time,ti)=>{
+    const tr = document.createElement('tr');
+    tr.style.borderBottom='1px solid var(--border)';
+    if(ti%2===0) tr.style.background='var(--card2)';
+    const tdT=document.createElement('td');
+    tdT.style.cssText='padding:5px 10px;font-size:0.68rem;font-weight:700;color:var(--muted);white-space:nowrap;vertical-align:top;';
+    tdT.textContent=time; tr.appendChild(tdT);
+    wpDays.forEach(day=>{
+      const key=day+'-'+time;
+      if(!wpData[key]) wpData[key]=wpDefaults[key]||{t:'',type:'free'};
+      const ev=wpData[key];
+      const st=wpTypeStyle[ev.type]||wpTypeStyle.free;
+      const td=document.createElement('td');
+      td.style.cssText='padding:3px 4px;vertical-align:top;';
+      const cell=document.createElement('div');
+      cell.style.cssText=`min-height:26px;border-radius:5px;padding:3px 6px;font-size:0.7rem;line-height:1.35;cursor:text;transition:background 0.1s;background:${st.bg};color:${st.col};`;
+      cell.setAttribute('contenteditable','true');
+      cell.setAttribute('data-key',key);
+      cell.textContent=ev.t;
+      cell.addEventListener('input',function(){wpData[this.getAttribute('data-key')].t=this.textContent;});
+      cell.addEventListener('contextmenu',function(e){
+        e.preventDefault();
+        const k=this.getAttribute('data-key');
+        const curr=wpTypeOrder.indexOf(wpData[k].type);
+        wpData[k].type=wpTypeOrder[(curr+1)%wpTypeOrder.length];
+        const s=wpTypeStyle[wpData[k].type];
+        this.style.background=s.bg; this.style.color=s.col;
+      });
+      cell.title='Rechtsklick: Typ wechseln';
+      td.appendChild(cell); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+buildWeekPlanTable();
+</script>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav" id="mobileNav">
+  <button class="mobile-nav-btn active" onclick="showPage('today'); setMobileNav(this)"><span class="mn-icon">🏠</span>Heute</button>
+  <button class="mobile-nav-btn" onclick="showPage('week'); setMobileNav(this)"><span class="mn-icon">📅</span>Woche</button>
+  <button class="mobile-nav-btn" onclick="showPage('projects'); setMobileNav(this)"><span class="mn-icon">📊</span>Projekte</button>
+  <button class="mobile-nav-btn" onclick="showPage('performance'); setMobileNav(this)"><span class="mn-icon">👥</span>Team</button>
+  <button class="mobile-nav-btn" onclick="showPage('monday'); setMobileNav(this)"><span class="mn-icon">📋</span>Monday</button>
+  <button class="mobile-nav-btn" onclick="showPage('growth'); setMobileNav(this)"><span class="mn-icon">🌱</span>Strategie</button>
+</nav>
+
+<script>
+function setMobileNav(btn) {
+  document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>function renderCapacityCard(grid, m) {
+  if(!m.weekFocus) m.weekFocus = [{text:'',done:false},{text:'',done:false},{text:'',done:false}];
+  const card = document.createElement('div');
+  card.className = 'team-perf-card';
+  card.style.borderTopColor = m.color;
+  const load = m.load || 0;
+  const loadColor = load >= 80 ? '#ef4444' : load >= 60 ? '#f59e0b' : '#22c55e';
+  const loadLabel = load >= 80 ? 'Hoch ausgelastet' : load >= 60 ? 'Gut ausgelastet' : 'Kapazität verfügbar';
+
+  const focusHtml = m.weekFocus.map((f,fi) => `
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <div style="width:20px;height:20px;border-radius:50%;background:${['#ef4444','#f59e0b','#3b82f6'][fi]};display:flex;align-items:center;justify-content:center;color:white;font-size:0.65rem;font-weight:900;flex-shrink:0;">${fi+1}</div>
+      <input type="text" value="${f.text}" placeholder="Fokus-Aufgabe ${fi+1}…"
+        style="flex:1;font-size:0.78rem;border:none;border-bottom:1.5px solid var(--border);padding:3px 4px;background:transparent;color:var(--text);font-family:inherit;outline:none;${f.done?'text-decoration:line-through;opacity:0.45;':''}"
+        oninput="updateFocus('${m.id}',${fi},'text',this.value)">
+      <div onclick="toggleFocus('${m.id}',${fi})" title="Erledigt" style="cursor:pointer;width:18px;height:18px;border-radius:4px;border:2px solid ${f.done?'#22c55e':'var(--border)'};background:${f.done?'#22c55e':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.6rem;">${f.done?'✓':''}</div>
+    </div>`).join('');
+
+  card.innerHTML = cardHeader(m)
+    + `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;border-left:3px solid #ef4444;">
+      <div style="font-size:0.7rem;font-weight:800;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🎯 Wochenziele — Monday Morning Call</div>
+      ${focusHtml}
+    </div>`
+    + `<div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;">Auslastung</div>
+        <div style="font-size:0.75rem;font-weight:700;color:${loadColor};">${loadLabel}</div>
+      </div>
+      <div style="height:8px;background:var(--border);border-radius:4px;">
+        <div style="height:8px;border-radius:4px;background:${loadColor};width:${load}%;transition:width 0.3s;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;">
+        <div style="font-size:0.68rem;color:var(--muted);">0%</div>
+        <div style="font-size:0.78rem;font-weight:800;color:${loadColor};">${load}%</div>
+        <div style="font-size:0.68rem;color:var(--muted);">100%</div>
+      </div>
+      <input type="range" min="0" max="100" value="${load}" style="width:100%;margin-top:4px;cursor:pointer;accent-color:${loadColor};"
+        oninput="updateLoad('${m.id}',this.value,this.closest('.team-perf-card'))">
+    </div>`
+    + tasksHtml(m)
+    + `<textarea class="editable-area" style="margin-top:10px;min-height:44px;" placeholder="Notizen, nächste Aufgaben..."></textarea>`;
+  grid.appendChild(card);
+}
+function renderKpiCard(grid, m) {
+  if(!m.weekFocus) m.weekFocus = [{text:'',done:false},{text:'',done:false},{text:'',done:false}];
+  const card = document.createElement('div');
+  card.className = 'team-perf-card';
+  card.style.borderTopColor = m.color;
+  const kpiHtml = Object.keys(m.kpis).map(k => `
+    <div class="kpi-box">
+      <input class="kpi-input" type="number" min="0" value="${m.kpis[k]}"
+        onchange="updateKpi('${m.id}','${k}',this.value)" style="color:${kpiColors[k]};">
+      <div class="kpi-label">${kpiLabels[k]}</div>
+    </div>`).join('');
+
+  const focusHtml = m.weekFocus.map((f,fi) => `
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+      <div style="width:20px;height:20px;border-radius:50%;background:${['#ef4444','#f59e0b','#3b82f6'][fi]};display:flex;align-items:center;justify-content:center;color:white;font-size:0.65rem;font-weight:900;flex-shrink:0;">${fi+1}</div>
+      <input type="text" value="${f.text}" placeholder="Fokus-Aufgabe ${fi+1}…"
+        style="flex:1;font-size:0.78rem;border:none;border-bottom:1.5px solid var(--border);padding:3px 4px;background:transparent;color:var(--text);font-family:inherit;outline:none;${f.done?'text-decoration:line-through;opacity:0.45;':''}"
+        oninput="updateFocus('${m.id}',${fi},'text',this.value)">
+      <div onclick="toggleFocus('${m.id}',${fi})" title="Erledigt" style="cursor:pointer;width:18px;height:18px;border-radius:4px;border:2px solid ${f.done?'#22c55e':'var(--border)'};background:${f.done?'#22c55e':'transparent'};flex-shrink:0;display:flex;align-items:center;justify-content:center;color:white;font-size:0.6rem;">${f.done?'✓':''}</div>
+    </div>`).join('');
+
+  card.innerHTML = cardHeader(m)
+    + `<div style="background:var(--bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;border-left:3px solid #ef4444;">
+      <div style="font-size:0.7rem;font-weight:800;color:#ef4444;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:8px;">🎯 Wochenziele — Monday Morning Call</div>
+      ${focusHtml}
+    </div>`
+    + `<div style="font-size:0.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;">KPIs — diese Woche</div>
+    <div class="kpi-grid">${kpiHtml}</div>`
+    + tasksHtml(m)
+    + `<textarea class="editable-area" style="margin-top:10px;min-height:44px;" placeholder="Notizen, Feedback..."></textarea>`;
+  grid.appendChild(card);
+}
+
